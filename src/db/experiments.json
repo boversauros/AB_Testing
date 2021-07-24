@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Article experiment",
+        "id": "ArticleExperimentId",
+        "variants": [
+            {
+                "id": "control",
+                "content": "<div>Meet the app that revolutionized reading.</div>"
+            },
+            {
+                "id": "test",
+                "content": "<div>Meet the app that has 18 million users.</div>"
+            }
+        ],
+        "container": "#article-header"
+    },
+    {
+        "name": "Hero experiment",
+        "id": "HeroExperimentId",
+        "variants": [
+            {
+                "id": "control",
+                "content": "<img width=\"300\" src=\"images/hero_image.jpg\" alt=\"Check out the Blinkist app\" />",
+                "isInternal": true
+            },
+            {
+                "id": "test",
+                "content": "<img width=\"300\" src=\"https://www.blinkist.com/packs/media/features/audio-hero/images/phones@2x-912b282ed855ff9bb98fb9210006e825.png\" alt=\"Check out the Blinkist app\" />",
+                "isInternal": false
+            }
+        ],
+        "container": "#hero"
+    }
+]
