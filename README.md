@@ -7,6 +7,10 @@ In the project directory, you can run:
 - `npm run build` - Build a dist directory
 - `npm run test` - Execute all the test
 
+## Live
+
+The application is deployed -> [https://abtest.surge.sh/](https://abtest.surge.sh/)
+
 
 ## Description
 
