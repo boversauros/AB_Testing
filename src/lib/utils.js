@@ -2,9 +2,9 @@
  * Set a new listener to an HTMLelement given
  *
  * @param {Object} HTMLelement
- * @param {string} value
- * @param {function} callback
- * @return {void}
+ * @param {String} value
+ * @param {Function} callback
+ * @return {Void}
  */
 const addListener = (HTMLelement, event, callback) => {
     if(typeof HTMLelement !== 'object') throw Error ('HTMLelement should be an object');
@@ -17,7 +17,7 @@ const addListener = (HTMLelement, event, callback) => {
 /**
  * Parse image string information
  *
- * @param {string} ImageELement
+ * @param {String} ImageELement
  * @return {Object}
  */
 const imageParser = (ImageElement, imageURL) => {

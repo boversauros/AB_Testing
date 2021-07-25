@@ -5,9 +5,9 @@ const myStorage = window.localStorage;
 /**
  * Set a new localStorage item
  *
- * @param {string} key
- * @param {string} value
- * @return {void}
+ * @param {String} key
+ * @param {String} value
+ * @return {Void}
  */
 const setItem = (key, value) => {
   if (!key || !value) return;
@@ -18,7 +18,7 @@ const setItem = (key, value) => {
 /**
  * Get a localStorage item by a given key
  *
- * @param {string} key
+ * @param {String} key
  * @return {object | null}
  */
 const getItem = (key) => {
@@ -30,8 +30,8 @@ const getItem = (key) => {
 /**
  * Delete an item in the local storage by given key
  *
- * @param {string} key
- * @return {string}
+ * @param {String} key
+ * @return {String}
  */
 const deleteItem = (key) => {
   if (!key) return;
@@ -42,7 +42,7 @@ const deleteItem = (key) => {
 /**
  * Clear all the localStorage set up
  *
- * @return {string}
+ * @return {String}
  */
 
 const clear = () => {
