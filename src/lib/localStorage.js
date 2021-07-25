@@ -20,7 +20,7 @@ const setItem = (key, value) => {
  * Get a localStorage item by a given key
  *
  * @param {string} key
- * @return {object | undefined}
+ * @return {object | null}
  */
 const getItem = (key) => {
   if (typeof myStorage === "undefined") return;
