@@ -28,7 +28,7 @@ As this is a client-side proof of concept, we ideally think that the localStorag
 
 Jest was the tool selected to test this application. This library allows us to test quickly. Also, Jsdom makes it easy to test the interaction with the DOM.
 
-![Coverage picture](./coverage_pic.png "Coverage picture")
+![Coverage picture](./assets/coverage_pic.png "Coverage picture")
 
 - `npx jest --coverage` - to get the coverage
 
