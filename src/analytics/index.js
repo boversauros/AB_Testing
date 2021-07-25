@@ -9,7 +9,7 @@ export class Analytics {
     return {
       ...this._context,
       user: {
-        gdpr: false,
+        gdpr: true,
         screenWidth: window.innerWidth,
         screenHeight: window.innerHeight,
         userAgent: navigator.userAgent

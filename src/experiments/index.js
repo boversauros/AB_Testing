@@ -1,6 +1,7 @@
 import experiments from '../db/experiments.json'
 import * as storage from '../lib/localStorage.js'
 import { imageParser } from '../lib/utils'
+import imageURL from '../../images/hero_image.jpg'
 
 const LOCAL_STORAGE_VARIATIONS_KEY = 'variations'
 const VARIATIONS_KEYS = ["control", "test"]
@@ -28,10 +29,9 @@ export class Experiments {
     const variations = this._variations
     experiments.forEach(({ id, container, variants }) => {
       const [{ variation }] = variations.filter(variation => variation.id === id)
-      const [selected] = variants.filter(variant => variant.id === variation)
-
+      const [selected] = variants?.filter(variant => variant.id === variation)
       if (selected.content?.includes('img') && selected.isInternal) {
-        const image = imageParser(selected.content)
+        const image = imageParser(selected.content, imageURL)
         document.querySelector(container).appendChild(image)
       } else {
         document.querySelector(container).innerHTML = selected.content

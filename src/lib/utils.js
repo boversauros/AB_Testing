@@ -1,6 +1,3 @@
-// file with utils
-import imageURL from '../../images/hero_image.jpg'
-
 /**
  * Set a new listener to an HTMLelement given
  *
@@ -23,7 +20,7 @@ const addListener = (HTMLelement, event, callback) => {
  * @param {string} ImageELement
  * @return {Object}
  */
-const imageParser = (ImageElement) => {
+const imageParser = (ImageElement, imageURL) => {
     const d = document.createElement('div');
     d.innerHTML = ImageElement;
     const  { firstChild }  = d;
