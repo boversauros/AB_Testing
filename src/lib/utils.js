@@ -21,6 +21,9 @@ const addListener = (HTMLelement, event, callback) => {
  * @return {Object}
  */
 const imageParser = (ImageElement, imageURL) => {
+    if(typeof ImageElement !== 'string') throw Error ('ImageElement should be an string');
+    if(typeof imageURL !== 'string') throw Error ('imageURL should be an string');
+    
     const d = document.createElement('div');
     d.innerHTML = ImageElement;
     const  { firstChild }  = d;

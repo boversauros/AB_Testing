@@ -10,7 +10,6 @@ const myStorage = window.localStorage;
  * @return {void}
  */
 const setItem = (key, value) => {
-  if (typeof myStorage === "undefined") return;
   if (!key || !value) return;
 
   myStorage.setItem(key, value);
@@ -23,7 +22,6 @@ const setItem = (key, value) => {
  * @return {object | null}
  */
 const getItem = (key) => {
-  if (typeof myStorage === "undefined") return;
   if (!key) return;
 
   return myStorage.getItem(key);
@@ -36,7 +34,6 @@ const getItem = (key) => {
  * @return {string}
  */
 const deleteItem = (key) => {
-  if (typeof myStorage === "undefined") return;
   if (!key) return;
 
   return myStorage.removeItem(key);
