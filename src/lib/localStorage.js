@@ -1,6 +1,6 @@
 // Basic abstraction of document.localStorage crud
 
-const myStorage = window.localStorage;
+const myStorage = window.localStorage
 
 /**
  * Set a new localStorage item
@@ -10,10 +10,10 @@ const myStorage = window.localStorage;
  * @return {Void}
  */
 const setItem = (key, value) => {
-  if (!key || !value) return;
+  if (!key || !value) return
 
-  myStorage.setItem(key, value);
-};
+  myStorage.setItem(key, value)
+}
 
 /**
  * Get a localStorage item by a given key
@@ -22,10 +22,10 @@ const setItem = (key, value) => {
  * @return {object | null}
  */
 const getItem = (key) => {
-  if (!key) return;
+  if (!key) return
 
-  return myStorage.getItem(key);
-};
+  return myStorage.getItem(key)
+}
 
 /**
  * Delete an item in the local storage by given key
@@ -34,10 +34,10 @@ const getItem = (key) => {
  * @return {String}
  */
 const deleteItem = (key) => {
-  if (!key) return;
+  if (!key) return
 
-  return myStorage.removeItem(key);
-};
+  return myStorage.removeItem(key)
+}
 
 /**
  * Clear all the localStorage set up
@@ -46,7 +46,7 @@ const deleteItem = (key) => {
  */
 
 const clear = () => {
-  return myStorage.clear();
-};
+  return myStorage.clear()
+}
 
-export { setItem, getItem, deleteItem, myStorage, clear };
+export { setItem, getItem, deleteItem, myStorage, clear }

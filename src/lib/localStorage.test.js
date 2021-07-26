@@ -53,7 +53,7 @@ describe('localStorage', () => {
     })
 
     it('should clear localStorage correctly', () => {
-        clear();
+        clear()
         expect(localStorage.clear).toHaveBeenCalled()
     })
 })

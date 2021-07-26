@@ -10,7 +10,7 @@ describe('utils', () => {
             addEventListener: jest.fn()
         }
 
-        const callback = () => {};
+        const callback = () => {}
 
         it('should add event listener to an element', () => {
             addListener(element, 'click', callback)
@@ -44,9 +44,9 @@ describe('utils', () => {
         const url = 'test.12314215.jpg'
 
         it('should parse correctly the image information', () => {
-            const result = imageParser(image, url);
-            expect(result).toBeDefined();
-            expect(result instanceof HTMLImageElement).toBeTruthy();
+            const result = imageParser(image, url)
+            expect(result).toBeDefined()
+            expect(result instanceof HTMLImageElement).toBeTruthy()
             expect(result.getAttribute('src')).toBe(url)
         })
 

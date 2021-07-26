@@ -12,7 +12,7 @@ describe('Experiments', () => {
         // Clear all instances and calls to constructor and all methods:
         setItem.mockClear()
         getItem.mockClear()
-        imageParser.mockClear();
+        imageParser.mockClear()
     })
 
     it('should give variations for a user', () => {
