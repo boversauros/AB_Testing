@@ -13,7 +13,7 @@ import imageURL from '../../images/hero_image.jpg'
 const LOCAL_STORAGE_VARIATIONS_KEY = 'variations'
 
 /** @const {Array} Array of experiment variations */
-const VARIATIONS_KEYS = ["control", "test"]
+// const VARIATIONS_KEYS = ["control", "variant1", "variant2"]
 
 /** This class is an essential library to generate random a/b testing cases and render variations. */
 export class Experiments {
@@ -30,7 +30,7 @@ export class Experiments {
     if (!variations) {
       variations = experiments.map(({ id, variants }) => {
         const selectedVariation = Math.round(Math.random() * (variants.length - 1))
-        return { id, variation: VARIATIONS_KEYS[selectedVariation] }
+        return { id, variation: variants[selectedVariation].id }
       })
 
       storage.setItem(LOCAL_STORAGE_VARIATIONS_KEY, JSON.stringify(variations))
@@ -49,7 +49,6 @@ export class Experiments {
     experiments.forEach(({ id, container, variants }) => {
       const [{ variation }] = variations.filter(variation => variation.id === id)
       const [selected] = variants?.filter(variant => variant.id === variation)
-
       if (selected.content?.includes('img') && selected.isInternal) {
         const image = imageParser(selected.content, imageURL)
         document.querySelector(container).appendChild(image)

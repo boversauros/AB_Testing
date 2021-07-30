@@ -8,8 +8,12 @@
                 "content": "<div>Meet the app that revolutionized reading.</div>"
             },
             {
-                "id": "test",
+                "id": "variation1",
                 "content": "<div>Meet the app that has 18 million users.</div>"
+            },
+            {
+                "id": "variation2",
+                "content": "<div>Media app that helps you read more.</div>"
             }
         ],
         "container": "#article-header"
