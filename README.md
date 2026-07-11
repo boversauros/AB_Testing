@@ -17,6 +17,7 @@ In the project directory, you can then run:
 - `pnpm build` - Build the production site in `dist`
 - `pnpm preview` - Preview the production build
 - `pnpm test` - Run the Vitest suite once
+- `pnpm test:coverage` - Run the suite and generate a coverage report
 - `pnpm test:watch` - Run Vitest in watch mode
 
 ## Live
