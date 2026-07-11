@@ -1,11 +1,22 @@
 # PROOF OF CONCEPT A/B TESTING
 
-## Scripts
-In the project directory, you can run:
+## Development
 
-- `npm run start` - Runs the application
-- `npm run build` - Build a dist directory
-- `npm run test` - Execute all the test
+This project uses Node.js 24 LTS and pnpm 11. The exact development versions are
+pinned in `.nvmrc` and the `packageManager` field in `package.json`.
+
+Install dependencies with:
+
+```sh
+pnpm install
+```
+
+In the project directory, you can then run:
+
+- `pnpm dev` - Start the Vite development server
+- `pnpm build` - Build the production site in `dist`
+- `pnpm preview` - Preview the production build
+- `pnpm test` - Run the Jest test suite
 
 ## Live
 
