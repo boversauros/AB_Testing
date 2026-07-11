@@ -1,14 +1,15 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setItem, getItem, deleteItem, clear } from './localStorage.js'
 
-jest.spyOn(window.localStorage.__proto__, 'setItem')
-jest.spyOn(window.localStorage.__proto__, 'getItem')
-jest.spyOn(window.localStorage.__proto__, 'removeItem')
-jest.spyOn(window.localStorage.__proto__, 'clear')
+vi.spyOn(window.localStorage.__proto__, 'setItem')
+vi.spyOn(window.localStorage.__proto__, 'getItem')
+vi.spyOn(window.localStorage.__proto__, 'removeItem')
+vi.spyOn(window.localStorage.__proto__, 'clear')
 
 
 describe('localStorage', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     it('should set item correctly', () => {
