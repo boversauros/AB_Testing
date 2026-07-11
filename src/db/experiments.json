@@ -29,8 +29,8 @@
             },
             {
                 "id": "test",
-                "content": "<img width=\"300\" src=\"https://www.blinkist.com/packs/media/features/audio-hero/images/phones@2x-912b282ed855ff9bb98fb9210006e825.png\" alt=\"Check out the Blinkist app\" />",
-                "isInternal": false
+                "content": "<img width=\"300\" src=\"images/hero_variant.jpg\" alt=\"Check out the Blinkist app\" />",
+                "isInternal": true
             }
         ],
         "container": "#hero"
