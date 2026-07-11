@@ -2,21 +2,25 @@
   "name": "ab-testing",
   "version": "1.0.0",
   "description": "JavaScript example starter project",
-  "main": "index.html",
-  "scripts": {
-    "start": "parcel index.html --open",
-    "build": "parcel build index.html",
-    "test": "jest"
+  "private": true,
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": "24.x",
+    "pnpm": "11.x"
   },
-  "dependencies": {
-    "parcel-bundler": "^1.6.1"
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "7.2.0",
-    "@babel/preset-env": "^7.14.8",
-    "babel-jest": "^27.0.6",
-    "jest": "^27.0.6",
-    "standard": "^16.0.3"
+    "@babel/preset-env": "7.14.8",
+    "babel-jest": "27.0.6",
+    "jest": "27.0.6",
+    "standard": "16.0.3",
+    "vite": "8.1.4"
   },
   "resolutions": {
     "@babel/preset-env": "7.13.8"
