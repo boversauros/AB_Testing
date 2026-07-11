@@ -1,4 +1,4 @@
-import * as storage from '../lib/localStorage'
+import * as storage from '@/lib/localStorage'
 
 export type AnalyticsContext = Readonly<Record<string, unknown>>
 export type AnalyticsProperties = Readonly<Record<string, unknown>>

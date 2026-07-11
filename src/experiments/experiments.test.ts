@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as storage from '../lib/localStorage'
-import * as utils from '../lib/utils'
-import { Experiments } from './index'
+import { Experiments } from '@/experiments'
+import * as storage from '@/lib/localStorage'
+import * as utils from '@/lib/utils'
 
 const setItem = vi.spyOn(storage, 'setItem')
 const getItem = vi.spyOn(storage, 'getItem')

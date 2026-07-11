@@ -1,7 +1,7 @@
-import './styles.css'
-import { Analytics } from './analytics'
-import { Experiments } from './experiments'
-import { addListener } from './lib/utils'
+import '@/styles.css'
+import { Analytics } from '@/analytics'
+import { Experiments } from '@/experiments'
+import { addListener } from '@/lib/utils'
 
 const experiments = new Experiments()
 const variations = experiments.getVariationsForUser()

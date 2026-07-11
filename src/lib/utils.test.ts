@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { addListener, imageParser } from './utils'
+import { addListener, imageParser } from '@/lib/utils'
 
 describe('utils', () => {
   beforeEach(() => {

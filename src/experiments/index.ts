@@ -1,8 +1,8 @@
 import controlHeroURL from '../../images/hero_image.jpg'
 import testHeroURL from '../../images/hero_variant.jpg'
-import experiments from '../db/experiments'
-import * as storage from '../lib/localStorage'
-import { imageParser } from '../lib/utils'
+import experiments from '@/db/experiments'
+import * as storage from '@/lib/localStorage'
+import { imageParser } from '@/lib/utils'
 
 export interface ExperimentAssignment {
   id: string

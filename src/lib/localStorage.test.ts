@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { clear, deleteItem, getItem, setItem } from './localStorage'
+import { clear, deleteItem, getItem, setItem } from '@/lib/localStorage'
 
 vi.spyOn(Storage.prototype, 'setItem')
 vi.spyOn(Storage.prototype, 'getItem')
