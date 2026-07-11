@@ -1,9 +1,10 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Analytics } from './index.js'
 import * as storage from '../lib/localStorage.js'
 
 
-const setItem = jest.spyOn(storage, 'setItem')
-const getItem = jest.spyOn(storage, 'getItem')
+const setItem = vi.spyOn(storage, 'setItem')
+const getItem = vi.spyOn(storage, 'getItem')
 
 describe('Analytics', () => {
     const variations = [{ id: 'test', variation: 'control' }]

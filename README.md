@@ -16,7 +16,8 @@ In the project directory, you can then run:
 - `pnpm dev` - Start the Vite development server
 - `pnpm build` - Build the production site in `dist`
 - `pnpm preview` - Preview the production build
-- `pnpm test` - Run the Jest test suite
+- `pnpm test` - Run the Vitest suite once
+- `pnpm test:watch` - Run Vitest in watch mode
 
 ## Live
 
@@ -40,11 +41,10 @@ As this is a client-side proof of concept, we ideally think that the localStorag
 
 ## Testing
 
-Jest was the tool selected to test this application. This library allows us to test quickly. Also, Jsdom makes it easy to test the interaction with the DOM.
+Vitest runs the test suite through Vite's transformation pipeline, while jsdom
+provides the browser environment used by DOM-focused tests.
 
 ![Coverage picture](./assets/coverage_pic.png "Coverage picture")
-
-- `npx jest --coverage` - to get the coverage
 
 ## User stories
 

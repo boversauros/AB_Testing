@@ -1,13 +1,14 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { addListener, imageParser } from './utils.js'
 
 describe('utils', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     describe('addListener', () => {
         const element = {
-            addEventListener: jest.fn()
+            addEventListener: vi.fn()
         }
 
         const callback = () => {}
