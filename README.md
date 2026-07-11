@@ -15,6 +15,7 @@ In the project directory, you can then run:
 
 - `pnpm dev` - Start the Vite development server
 - `pnpm build` - Build the production site in `dist`
+- `pnpm typecheck` - Check the strict TypeScript project without emitting files
 - `pnpm preview` - Preview the production build
 - `pnpm test` - Run the Vitest suite once
 - `pnpm test:coverage` - Run the suite and generate a coverage report
@@ -26,15 +27,15 @@ The application is deployed -> [https://abtest.surge.sh/](https://abtest.surge.s
 
 ## Description
 
-The idea of this project is to create a vanilla javascript A/B testing motor. Usually, when we have to do this kind of task, we tend to use an external library.
+The idea of this project is to create a vanilla TypeScript A/B testing motor. Usually, when we have to do this kind of task, we tend to use an external library.
 
-The main point to me was to keep as simple as possible the starter point of my application, the index.js file. In this file, we execute the Experiments and Analytics libraries.
+The main point to me was to keep as simple as possible the starter point of my application, the main.ts file. In this file, we execute the Experiments and Analytics libraries.
 
 First of all, it is a requirement to initialize experiments to get the variations needed for the website user. Once we have the variants stored in the localSTorage, we can initialize the Analytics class. This class will allow us to track any event we define and every page view we set.
 
 For this first version of the project, we take for granted that the user has accepted all the GDPR. We could improve the Analytics class to handle all the legal consent using this library.
 
-The experiments.json shows an idea of how a server could give the data. This structure allows us to handle more than one experiment per page. Also, the variants are objects to allow scalability for it. For example, we could add more information about traffic, valid date, or others in the future.
+The typed experiment catalog shows an idea of how a server could give the data. This structure allows us to handle more than one experiment per page. Also, the variants are objects to allow scalability for it. For example, we could add more information about traffic, valid date, or others in the future.
 
 ## LocalStorage
 

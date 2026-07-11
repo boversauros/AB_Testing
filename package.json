@@ -12,6 +12,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
@@ -20,6 +21,7 @@
     "@vitest/coverage-v8": "4.1.10",
     "jsdom": "29.1.1",
     "standard": "16.0.3",
+    "typescript": "6.0.3",
     "vite": "8.1.4",
     "vitest": "4.1.10"
   },
