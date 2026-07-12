@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { addListener, imageParser } from '@/lib/utils'
+import { addListener } from '@/lib/utils'
 
 describe('utils', () => {
   beforeEach(() => {
@@ -44,42 +44,6 @@ describe('utils', () => {
     it('should throw error when callback is not a function', () => {
       expect(() => addListener(element, 'click', 'foo')).toThrowError(
         'callback should be a function'
-      )
-    })
-  })
-
-  describe('imageParser', () => {
-    const image = '<img src="test.jpg" alt="test" />'
-    const url = 'test.12314215.jpg'
-
-    it('should parse correctly the image information', () => {
-      const result = imageParser(image, url)
-      expect(result).toBeDefined()
-      expect(result instanceof HTMLImageElement).toBeTruthy()
-      expect(result.getAttribute('src')).toBe(url)
-    })
-
-    it('should throw error when no image provided', () => {
-      expect(() => imageParser()).toThrowError(
-        'ImageElement should be an string'
-      )
-    })
-
-    it('should throw error when image provided is not a string', () => {
-      expect(() => imageParser({})).toThrowError(
-        'ImageElement should be an string'
-      )
-    })
-
-    it('should throw error when no url provided', () => {
-      expect(() => imageParser(image)).toThrowError(
-        'imageURL should be an string'
-      )
-    })
-
-    it('should throw error when url provided is not a string', () => {
-      expect(() => imageParser(image, {})).toThrowError(
-        'imageURL should be an string'
       )
     })
   })

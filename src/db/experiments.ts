@@ -1,35 +1,35 @@
-export interface ExperimentVariant {
-  readonly id: string
-  readonly content: string
-  readonly isInternal?: boolean
-}
+import controlHeroURL from '../../images/hero_image.jpg'
+import testHeroURL from '../../images/hero_variant.jpg'
+import type { ExperimentCatalog } from '@/experimentation'
 
-export interface ExperimentDefinition {
-  readonly name: string
-  readonly id: string
-  readonly variants: readonly ExperimentVariant[]
-  readonly container: string
-}
-
-const experiments: readonly ExperimentDefinition[] = [
+const experiments: ExperimentCatalog = [
   {
     name: 'Article experiment',
     id: 'ArticleExperimentId',
     variants: [
       {
         id: 'control',
-        content: '<div>Meet the app that revolutionized reading.</div>'
+        content: {
+          type: 'text',
+          text: 'Meet the app that revolutionized reading.'
+        }
       },
       {
         id: 'variation1',
-        content: '<div>Meet the app that has 18 million users.</div>'
+        content: {
+          type: 'text',
+          text: 'Meet the app that has 18 million users.'
+        }
       },
       {
         id: 'variation2',
-        content: '<div>Media app that helps you read more.</div>'
+        content: {
+          type: 'text',
+          text: 'Media app that helps you read more.'
+        }
       }
     ],
-    container: '#article-header'
+    placement: 'article-header'
   },
   {
     name: 'Hero experiment',
@@ -37,18 +37,24 @@ const experiments: readonly ExperimentDefinition[] = [
     variants: [
       {
         id: 'control',
-        content:
-          '<img width="300" src="images/hero_image.jpg" alt="Check out the Blinkist app" />',
-        isInternal: true
+        content: {
+          type: 'image',
+          src: controlHeroURL,
+          alt: 'Check out the Blinkist app',
+          width: 300
+        }
       },
       {
         id: 'test',
-        content:
-          '<img width="300" src="images/hero_variant.jpg" alt="Check out the Blinkist app" />',
-        isInternal: true
+        content: {
+          type: 'image',
+          src: testHeroURL,
+          alt: 'Check out the Blinkist app',
+          width: 300
+        }
       }
     ],
-    container: '#hero'
+    placement: 'hero'
   }
 ]
 

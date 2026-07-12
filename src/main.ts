@@ -1,13 +1,17 @@
 import '@/styles.css'
 import { Analytics } from '@/analytics'
-import { Experiments } from '@/experiments'
+import experiments from '@/db/experiments'
+import { createExperimentation } from '@/experimentation'
 import { addListener } from '@/lib/utils'
 
-const experiments = new Experiments()
-const variations = experiments.getVariationsForUser()
-experiments.renderVariations()
+const activation = createExperimentation({
+  root: document,
+  storage: localStorage
+}).activate(experiments)
 
-const analytics = new Analytics({ context: { variations } })
+const analytics = new Analytics({ context: { exposures: activation.exposures } })
+
+for (const issue of activation.issues) console.warn(issue.message)
 const signUp = document.querySelector<HTMLAnchorElement>('a')
 
 if (!signUp) {
