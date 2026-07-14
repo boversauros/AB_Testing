@@ -1,55 +1,57 @@
-export interface ExperimentVariant {
-  readonly id: string
-  readonly content: string
-  readonly isInternal?: boolean
-}
+import controlHeroURL from '../../images/hero_image.jpg'
+import testHeroURL from '../../images/hero_variant.jpg'
+import type { ExperimentCatalog } from '@/experimentation'
 
-export interface ExperimentDefinition {
-  readonly name: string
-  readonly id: string
-  readonly variants: readonly ExperimentVariant[]
-  readonly container: string
-}
-
-const experiments: readonly ExperimentDefinition[] = [
+/**
+ * The experiment catalog a server could deliver. Placements are semantic
+ * names resolved by the experimentation module, so the catalog never carries
+ * DOM selectors.
+ */
+const experimentCatalog: ExperimentCatalog = [
   {
+    id: 'article-headline',
     name: 'Article experiment',
-    id: 'ArticleExperimentId',
+    placement: 'article-header',
     variants: [
       {
         id: 'control',
-        content: '<div>Meet the app that revolutionized reading.</div>'
+        content: { kind: 'text', text: 'Meet the app that revolutionized reading.' }
       },
       {
         id: 'variation1',
-        content: '<div>Meet the app that has 18 million users.</div>'
+        content: { kind: 'text', text: 'Meet the app that has 18 million users.' }
       },
       {
         id: 'variation2',
-        content: '<div>Media app that helps you read more.</div>'
+        content: { kind: 'text', text: 'Media app that helps you read more.' }
       }
-    ],
-    container: '#article-header'
+    ]
   },
   {
+    id: 'hero-image',
     name: 'Hero experiment',
-    id: 'HeroExperimentId',
+    placement: 'hero',
     variants: [
       {
         id: 'control',
-        content:
-          '<img width="300" src="images/hero_image.jpg" alt="Check out the Blinkist app" />',
-        isInternal: true
+        content: {
+          kind: 'image',
+          src: controlHeroURL,
+          alt: 'Check out the Blinkist app',
+          width: 300
+        }
       },
       {
         id: 'test',
-        content:
-          '<img width="300" src="images/hero_variant.jpg" alt="Check out the Blinkist app" />',
-        isInternal: true
+        content: {
+          kind: 'image',
+          src: testHeroURL,
+          alt: 'Check out the Blinkist app',
+          width: 300
+        }
       }
-    ],
-    container: '#hero'
+    ]
   }
 ]
 
-export default experiments
+export default experimentCatalog
