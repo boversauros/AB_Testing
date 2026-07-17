@@ -1,72 +1,86 @@
-import * as storage from '@/lib/localStorage'
+import { markDelivered, wasDelivered } from './deduplication'
+import type {
+  AnalyticsEvent,
+  AnalyticsSink,
+  ContextProvider,
+  DeduplicationStorage,
+  RecordResult
+} from './types'
 
-export type AnalyticsContext = Readonly<Record<string, unknown>>
-export type AnalyticsProperties = Readonly<Record<string, unknown>>
+export type {
+  AnalyticsContext,
+  AnalyticsEvent,
+  AnalyticsProperties,
+  AnalyticsSink,
+  ContextProvider,
+  DeduplicationStorage,
+  ExperimentExposure,
+  OutboundEvent,
+  RecordResult
+} from './types'
 
-interface UserContext {
-  gdpr: boolean
-  screenWidth: number
-  screenHeight: number
-  userAgent: string
+export { createConsoleSink } from './consoleSink'
+
+export interface AnalyticsOptions {
+  /** Supplies the visitor context attached to every event. */
+  readonly context: ContextProvider
+  /** Where once-only delivery markers persist, usually `window.localStorage`. */
+  readonly storage: DeduplicationStorage
+  /** Where enriched events are delivered, e.g. the console sink. */
+  readonly sink: AnalyticsSink
 }
 
-interface EnrichedAnalyticsContext extends AnalyticsContext {
-  user: UserContext
+export interface Analytics {
+  /**
+   * Enriches the event with the current visitor context and delivers it to
+   * the sink, reporting what happened instead of failing silently.
+   *
+   * Without consent the event is skipped and nothing is stored. Once-only
+   * events are marked as delivered only after the sink succeeds, so a failed
+   * delivery stays retryable.
+   */
+  record(event: AnalyticsEvent): RecordResult
 }
 
-/** Creates an anonymous user context and tracks actions on a web page. */
-export class Analytics {
-  readonly _context: AnalyticsContext
+export const createAnalytics = ({
+  context,
+  storage,
+  sink
+}: AnalyticsOptions): Analytics => {
+  const record = (event: AnalyticsEvent): RecordResult => {
+    const currentContext = context()
 
-  constructor({ context }: { context: AnalyticsContext }) {
-    this._context = context
+    if (!currentContext.consent) {
+      return Object.freeze({
+        status: 'skipped',
+        reason: 'consent-not-granted'
+      } as const)
+    }
+
+    if (event.once && wasDelivered(storage, event)) {
+      return Object.freeze({ status: 'duplicate' } as const)
+    }
+
+    try {
+      sink.deliver({
+        kind: event.kind,
+        name: event.name,
+        properties: event.properties ?? {},
+        context: currentContext
+      })
+    } catch (error) {
+      return Object.freeze({
+        status: 'failed',
+        reason: error instanceof Error ? error.message : String(error)
+      } as const)
+    }
+
+    if (event.once) {
+      markDelivered(storage, event)
+    }
+
+    return Object.freeze({ status: 'delivered' } as const)
   }
 
-  _getContext(): EnrichedAnalyticsContext {
-    return {
-      ...this._context,
-      user: {
-        gdpr: true,
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
-        userAgent: navigator.userAgent
-      }
-    }
-  }
-
-  track(
-    eventName: string,
-    properties: AnalyticsProperties,
-    unique = false
-  ): void {
-    if (!unique) {
-      console.log(`--> Track Event: ${eventName}`, properties, this._getContext())
-      return
-    }
-
-    const storedEvent = storage.getItem(eventName)
-    const trackEvent: unknown = JSON.parse(storedEvent ?? 'null')
-    if (!trackEvent) {
-      storage.setItem(eventName, true)
-      console.log(`--> Track Event: ${eventName}`, properties, this._getContext())
-    }
-  }
-
-  page(
-    pageName: string,
-    properties: AnalyticsProperties,
-    unique = false
-  ): void {
-    if (!unique) {
-      console.log(`--> Track PageView: ${pageName}`, properties, this._getContext())
-      return
-    }
-
-    const storedPage = storage.getItem(pageName)
-    const pageEvent: unknown = JSON.parse(storedPage ?? 'null')
-    if (!pageEvent) {
-      storage.setItem(pageName, true)
-      console.log(`--> Track PageView: ${pageName}`, properties, this._getContext())
-    }
-  }
+  return { record }
 }

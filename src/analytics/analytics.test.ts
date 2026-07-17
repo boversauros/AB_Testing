@@ -1,67 +1,254 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Analytics } from '@/analytics'
-import * as storage from '@/lib/localStorage'
+import { describe, expect, it } from 'vitest'
+import { createAnalytics, createConsoleSink } from '@/analytics'
+import type {
+  AnalyticsContext,
+  AnalyticsSink,
+  DeduplicationStorage,
+  OutboundEvent
+} from '@/analytics'
 
-const setItem = vi.spyOn(storage, 'setItem')
-const getItem = vi.spyOn(storage, 'getItem')
+const createMemoryStorage = (
+  initial: Record<string, string> = {}
+): DeduplicationStorage => {
+  const entries = new Map(Object.entries(initial))
+  return {
+    getItem: key => entries.get(key) ?? null,
+    setItem: (key, value) => {
+      entries.set(key, value)
+    }
+  }
+}
 
-describe('Analytics', () => {
-  const variations = [{ id: 'test', variation: 'control' }]
+const createRecordingSink = (): {
+  sink: AnalyticsSink
+  delivered: OutboundEvent[]
+} => {
+  const delivered: OutboundEvent[] = []
+  return {
+    sink: {
+      deliver: event => {
+        delivered.push(event)
+      }
+    },
+    delivered
+  }
+}
 
-  beforeEach(() => {
-    setItem.mockClear()
-    getItem.mockClear()
+const createFailingSink = (message: string): AnalyticsSink => ({
+  deliver: () => {
+    throw new Error(message)
+  }
+})
+
+const visitorContext: AnalyticsContext = {
+  consent: true,
+  exposures: [{ experimentId: 'hero', variantId: 'control' }]
+}
+
+describe('createAnalytics', () => {
+  it('delivers an event enriched with the visitor context and exposures', () => {
+    const { sink, delivered } = createRecordingSink()
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage(),
+      sink
+    })
+
+    const result = analytics.record({
+      kind: 'page',
+      name: 'Home Viewed',
+      properties: { url: 'https://example.test/' }
+    })
+
+    expect(result).toEqual({ status: 'delivered' })
+    expect(delivered).toEqual([
+      {
+        kind: 'page',
+        name: 'Home Viewed',
+        properties: { url: 'https://example.test/' },
+        context: visitorContext
+      }
+    ])
   })
 
-  it('should initialize correct the class', () => {
-    const analytics = new Analytics({ context: { variations } })
-    expect(analytics._context).toBeDefined()
-    expect(analytics._context).toEqual({ variations })
+  it('delivers omitted properties as an empty object', () => {
+    const { sink, delivered } = createRecordingSink()
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage(),
+      sink
+    })
+
+    analytics.record({ kind: 'interaction', name: 'Sign Up' })
+
+    expect(delivered[0]?.properties).toEqual({})
   })
 
-  it('should give context correctly', () => {
-    const analytics = new Analytics({ context: { variations } })
-    const context = analytics._getContext()
-    expect(context).toBeDefined()
-    expect(context.variations).toEqual(variations)
-    expect(context.user).toBeDefined()
-    expect(typeof context.user).toBe('object')
-    expect(context.user.gdpr).toBeTruthy()
+  it('delivers repeatable events every time without touching storage', () => {
+    const { sink, delivered } = createRecordingSink()
+    const storage = createMemoryStorage()
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage,
+      sink
+    })
+
+    const first = analytics.record({ kind: 'page', name: 'Home Viewed' })
+    const second = analytics.record({ kind: 'page', name: 'Home Viewed' })
+
+    expect(first.status).toBe('delivered')
+    expect(second.status).toBe('delivered')
+    expect(delivered).toHaveLength(2)
+    expect(storage.getItem('ab-testing:analytics:v1:page:Home Viewed')).toBeNull()
   })
 
-  it('should track correctly a not unique event', () => {
-    const analytics = new Analytics({ context: { variations } })
+  it('delivers a once-only event a single time and reports the duplicate', () => {
+    const { sink, delivered } = createRecordingSink()
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage(),
+      sink
+    })
+    const signUp = { kind: 'interaction', name: 'Sign Up', once: true } as const
 
-    analytics.track('click', { properties: 'test' })
-    expect(setItem).not.toHaveBeenCalled()
-    expect(getItem).not.toHaveBeenCalled()
+    const first = analytics.record(signUp)
+    const second = analytics.record(signUp)
+
+    expect(first).toEqual({ status: 'delivered' })
+    expect(second).toEqual({ status: 'duplicate' })
+    expect(delivered).toHaveLength(1)
   })
 
-  it('should track correctly a unique event', () => {
-    const analytics = new Analytics({ context: { variations } })
+  it('keeps once-only events deduplicated across analytics instances', () => {
+    const storage = createMemoryStorage()
+    const signUp = { kind: 'interaction', name: 'Sign Up', once: true } as const
 
-    analytics.track('click', { properties: 'test' }, true)
-    expect(setItem).toHaveBeenCalled()
-    expect(getItem).toHaveBeenCalled()
-    expect(getItem).toHaveBeenCalledWith('click')
-    expect(setItem).toHaveBeenCalledWith('click', true)
+    const firstVisit = createAnalytics({
+      context: () => visitorContext,
+      storage,
+      sink: createRecordingSink().sink
+    })
+    firstVisit.record(signUp)
+
+    expect(
+      storage.getItem('ab-testing:analytics:v1:interaction:Sign Up')
+    ).toBe('delivered')
+
+    const secondVisit = createAnalytics({
+      context: () => visitorContext,
+      storage,
+      sink: createRecordingSink().sink
+    })
+
+    expect(secondVisit.record(signUp)).toEqual({ status: 'duplicate' })
   })
 
-  it('should track correctly a not unique page', () => {
-    const analytics = new Analytics({ context: { variations } })
+  it('keeps a once-only event retryable after the sink fails', () => {
+    const storage = createMemoryStorage()
+    const signUp = { kind: 'interaction', name: 'Sign Up', once: true } as const
 
-    analytics.page('page', { properties: 'test' })
-    expect(setItem).not.toHaveBeenCalled()
-    expect(getItem).not.toHaveBeenCalled()
+    const failing = createAnalytics({
+      context: () => visitorContext,
+      storage,
+      sink: createFailingSink('network down')
+    })
+
+    expect(failing.record(signUp)).toEqual({
+      status: 'failed',
+      reason: 'network down'
+    })
+
+    const { sink, delivered } = createRecordingSink()
+    const working = createAnalytics({
+      context: () => visitorContext,
+      storage,
+      sink
+    })
+
+    expect(working.record(signUp)).toEqual({ status: 'delivered' })
+    expect(delivered).toHaveLength(1)
   })
 
-  it('should track correctly a unique page', () => {
-    const analytics = new Analytics({ context: { variations } })
+  it('skips events without consent and leaves no trace', () => {
+    const { sink, delivered } = createRecordingSink()
+    const storage = createMemoryStorage()
+    const analytics = createAnalytics({
+      context: () => ({ consent: false, exposures: [] }),
+      storage,
+      sink
+    })
 
-    analytics.page('page', { properties: 'test' }, true)
-    expect(setItem).toHaveBeenCalled()
-    expect(getItem).toHaveBeenCalled()
-    expect(getItem).toHaveBeenCalledWith('page')
-    expect(setItem).toHaveBeenCalledWith('page', true)
+    const result = analytics.record({
+      kind: 'interaction',
+      name: 'Sign Up',
+      once: true
+    })
+
+    expect(result).toEqual({ status: 'skipped', reason: 'consent-not-granted' })
+    expect(delivered).toHaveLength(0)
+    expect(storage.getItem('ab-testing:analytics:v1:interaction:Sign Up')).toBeNull()
+  })
+
+  it('deduplicates a page and an interaction with the same name independently', () => {
+    const { sink, delivered } = createRecordingSink()
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage(),
+      sink
+    })
+
+    const asPage = analytics.record({ kind: 'page', name: 'Welcome', once: true })
+    const asInteraction = analytics.record({
+      kind: 'interaction',
+      name: 'Welcome',
+      once: true
+    })
+
+    expect(asPage).toEqual({ status: 'delivered' })
+    expect(asInteraction).toEqual({ status: 'delivered' })
+    expect(delivered).toHaveLength(2)
+  })
+
+  it('ignores legacy raw-name keys left over from the previous schema', () => {
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage({ 'Sign Up': 'true' }),
+      sink: createRecordingSink().sink
+    })
+
+    const result = analytics.record({
+      kind: 'interaction',
+      name: 'Sign Up',
+      once: true
+    })
+
+    expect(result).toEqual({ status: 'delivered' })
+  })
+
+  it('returns frozen results', () => {
+    const analytics = createAnalytics({
+      context: () => visitorContext,
+      storage: createMemoryStorage(),
+      sink: createRecordingSink().sink
+    })
+
+    const result = analytics.record({ kind: 'page', name: 'Home Viewed' })
+
+    expect(Object.isFrozen(result)).toBe(true)
+  })
+})
+
+describe('createConsoleSink', () => {
+  it('logs the event without throwing', () => {
+    const sink = createConsoleSink()
+
+    expect(() =>
+      sink.deliver({
+        kind: 'page',
+        name: 'Home Viewed',
+        properties: {},
+        context: visitorContext
+      })
+    ).not.toThrow()
   })
 })

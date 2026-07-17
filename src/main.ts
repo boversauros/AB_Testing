@@ -1,5 +1,5 @@
 import '@/styles.css'
-import { Analytics } from '@/analytics'
+import { createAnalytics, createConsoleSink } from '@/analytics'
 import experimentCatalog from '@/db/experiments'
 import { createExperimentation } from '@/experimentation'
 
@@ -9,30 +9,36 @@ const experimentation = createExperimentation({
 })
 const activation = experimentation.activate(experimentCatalog)
 
-const analytics = new Analytics({
-  context: { variations: activation.exposures }
+const analytics = createAnalytics({
+  // Consent is application knowledge; this demo page grants it up front.
+  context: () => ({
+    consent: true,
+    exposures: activation.exposures,
+    screen: { width: window.innerWidth, height: window.innerHeight },
+    userAgent: navigator.userAgent
+  }),
+  storage: window.localStorage,
+  sink: createConsoleSink()
 })
+
 const signUp = document.querySelector<HTMLAnchorElement>('a')
 
 if (!signUp) {
   throw new Error('Sign-up link was not found')
 }
 
-const trackSignUp = (event: Event): void => {
+signUp.addEventListener('click', event => {
   event.preventDefault()
-  analytics.track(
-    'Sign Up',
-    {
-      url: window.location.href
-    },
-    true
-  )
+  analytics.record({
+    kind: 'interaction',
+    name: 'Sign Up',
+    properties: { url: window.location.href },
+    once: true
+  })
+})
 
-  console.log('PAYLOAD_')
-}
-
-signUp.addEventListener('click', trackSignUp)
-
-analytics.page('Home Viewed', {
-  url: window.location.href
+analytics.record({
+  kind: 'page',
+  name: 'Home Viewed',
+  properties: { url: window.location.href }
 })
