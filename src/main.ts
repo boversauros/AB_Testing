@@ -1,13 +1,17 @@
 import '@/styles.css'
 import { Analytics } from '@/analytics'
-import { Experiments } from '@/experiments'
-import { addListener } from '@/lib/utils'
+import experimentCatalog from '@/db/experiments'
+import { createExperimentation } from '@/experimentation'
 
-const experiments = new Experiments()
-const variations = experiments.getVariationsForUser()
-experiments.renderVariations()
+const experimentation = createExperimentation({
+  root: document,
+  storage: window.localStorage
+})
+const activation = experimentation.activate(experimentCatalog)
 
-const analytics = new Analytics({ context: { variations } })
+const analytics = new Analytics({
+  context: { variations: activation.exposures }
+})
 const signUp = document.querySelector<HTMLAnchorElement>('a')
 
 if (!signUp) {
@@ -27,7 +31,7 @@ const trackSignUp = (event: Event): void => {
   console.log('PAYLOAD_')
 }
 
-addListener(signUp, 'click', trackSignUp)
+signUp.addEventListener('click', trackSignUp)
 
 analytics.page('Home Viewed', {
   url: window.location.href
