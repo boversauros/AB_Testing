@@ -44,7 +44,7 @@ export interface Experimentation {
 }
 
 const documentOf = (root: Document | Element): Document =>
-  root.ownerDocument ?? (root as Document)
+  root.ownerDocument ?? root
 
 /** Escapes quotes and backslashes so a placement name is a safe selector. */
 const escapeAttributeValue = (value: string): string =>
