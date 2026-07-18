@@ -1,3 +1,13 @@
+# Dependencies
 node_modules/
+
+# Build and coverage output
 dist/
 coverage/
+
+# Vite
+.vite/
+*.local
+
+# pnpm
+pnpm-debug.log*

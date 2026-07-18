@@ -146,10 +146,14 @@ describe('createExperimentation', () => {
 
     expect(activation.exposures).toHaveLength(2)
     const persisted: unknown = JSON.parse(storage.getItem(STORAGE_KEY) ?? 'null')
-    expect(persisted).toEqual({
-      headline: expect.any(String),
-      hero: expect.any(String)
-    })
+    expect(persisted).toEqual(
+      Object.fromEntries(
+        activation.exposures.map(({ experimentId, variantId }) => [
+          experimentId,
+          variantId
+        ])
+      )
+    )
   })
 
   it('replaces assignments that reference removed variants', () => {

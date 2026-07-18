@@ -1,58 +1,154 @@
-# PROOF OF CONCEPT A/B TESTING
+# A/B Testing — vanilla TypeScript
 
-## Development
+A small A/B testing engine written in vanilla TypeScript, with no framework and
+no external testing library. The project is a clean-architecture exercise: two
+deep modules behind small interfaces, wired together by a thin composition
+root.
 
-This project uses Node.js 24 LTS and pnpm 11. The exact development versions are
-pinned in the `packageManager` field in `package.json`.
+Live demo: [https://abtest.surge.sh/](https://abtest.surge.sh/)
 
-Install dependencies with:
+## Requirements
+
+- Node.js 24
+- pnpm 11
+
+The exact development versions are pinned in the `packageManager` field of
+`package.json`.
+
+## Getting started
 
 ```sh
 pnpm install
+pnpm dev
 ```
 
-In the project directory, you can then run:
+Available commands:
 
-- `pnpm dev` - Start the Vite development server
-- `pnpm build` - Build the production site in `dist`
-- `pnpm typecheck` - Check the strict TypeScript project without emitting files
-- `pnpm preview` - Preview the production build
-- `pnpm test` - Run the Vitest suite once
-- `pnpm test:coverage` - Run the suite and generate a coverage report
-- `pnpm test:watch` - Run Vitest in watch mode
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Start the Vite development server |
+| `pnpm build` | Build the production site into `dist` |
+| `pnpm preview` | Preview the production build |
+| `pnpm typecheck` | Type-check the strict TypeScript project |
+| `pnpm lint` | Lint with ESLint and type-aware typescript-eslint rules |
+| `pnpm test` | Run the Vitest suite once |
+| `pnpm test:watch` | Run Vitest in watch mode |
+| `pnpm test:coverage` | Run the suite and write a coverage report to `coverage/` |
+| `pnpm check` | Type checking, linting, tests, and production build in one gate |
 
-## Live
+`pnpm check` is the single quality command; CI runs exactly the same gate on
+every push and pull request (see `.github/workflows/ci.yml`). Coverage is an
+observation tool — there is intentionally no percentage threshold to game.
 
-The application is deployed -> [https://abtest.surge.sh/](https://abtest.surge.sh/)
+## Architecture
 
-## Description
+The design goal is two [deep modules](https://web.stanford.edu/~ouster/cgi-bin/aposd.php)
+behind small interfaces, and a composition root that only wires them together:
 
-The idea of this project is to create a vanilla TypeScript A/B testing motor. Usually, when we have to do this kind of task, we tend to use an external library.
+```
+src/
+├── main.ts                 Composition root: wires real dependencies, no logic
+├── db/experiments.ts       Typed experiment catalog (stand-in for a server)
+├── experimentation/        Deep module #1: assignment, persistence, rendering
+│   ├── index.ts            Public factory + `Experimentation` interface
+│   ├── types.ts            Public types (catalog in, activation result out)
+│   ├── assignments.ts      Internal: reconcile stored assignments
+│   ├── render.ts           Internal: variant content → DOM element
+│   └── validate.ts         Internal: catalog invariants
+└── analytics/              Deep module #2: consent, deduplication, delivery
+    ├── index.ts            Public factory + `Analytics` interface
+    ├── types.ts            Public types (event in, record result out)
+    ├── deduplication.ts    Internal: once-only delivery markers
+    └── consoleSink.ts      A sink implementation for development and demos
+```
 
-The main point to me was to keep as simple as possible the starter point of my application, the main.ts file. In this file, we create the experimentation module and the analytics module, wiring in their real dependencies (localStorage, the console sink, the visitor context).
+`src/main.ts` is the only place that knows about real browser dependencies. It
+hands `document`, `window.localStorage`, a console sink, and a visitor-context
+provider to the two factories and contains no experiment or analytics logic
+itself. Both modules depend only on the narrow interfaces they declare
+(`AssignmentStorage`, `DeduplicationStorage`, `AnalyticsSink`,
+`ContextProvider`), which is also how the tests inject fakes.
 
-A single `experimentation.activate(catalog)` call assigns one variant per experiment, persists the assignments in localStorage, renders the variants into their placements, and returns the exposures that actually reached the page. Those exposures feed the analytics context, so every recorded event carries which variants the visitor saw.
+## Experimentation
 
-Analytics exposes one `record` operation for both page views and interactions, and returns what happened to each event: `delivered`, `duplicate`, `skipped`, or `failed`. Consent is supplied by the application from the composition root; without it, events are skipped and nothing is stored.
+The whole module is one operation:
 
-The typed experiment catalog shows an idea of how a server could give the data. This structure allows us to handle more than one experiment per page. Also, the variants are objects to allow scalability for it. For example, we could add more information about traffic, valid date, or others in the future.
+```ts
+const experimentation = createExperimentation({ root: document, storage: localStorage })
+const activation = experimentation.activate(catalog)
+// activation: { exposures, issues }
+```
 
-## LocalStorage
+`activate` assigns one variant per experiment, persists the assignments,
+renders each variant into the element carrying the matching
+`data-placement` attribute, and reports what happened. Its invariants:
 
-As this is a client-side proof of concept, we ideally think that the localStorage is a good starting point for the persistent data. Thus, we achieve that the user only sees one variation, and also, we can handle how many times we track an event. But in the future will be an improvement to use the cookies to send this information easily to a server.
+- **One variant per experiment.** Every catalog experiment gets exactly one
+  assigned variant, picked uniformly at random on first visit.
+- **Exposures are truthful.** `exposures` only contains variants that actually
+  reached the DOM — an assigned variant whose placement is missing is not an
+  exposure.
+- **Failures are contained.** A missing placement becomes an entry in `issues`
+  and leaves the existing page content untouched; one broken experiment can
+  never take down the rest of the page.
+- **Activation is idempotent.** Rendering replaces the placement's children,
+  so activating again yields the same page, not duplicated content.
+- **Invalid catalogs throw early.** A catalog that violates its invariants
+  (duplicate ids, empty variant lists, …) is a programming error: `activate`
+  throws before touching storage or the DOM.
 
-## Testing
+### Assignment persistence
 
-Vitest runs the test suite through Vite's transformation pipeline, while jsdom
-provides the browser environment used by DOM-focused tests.
+Assignments live under a single versioned localStorage key,
+`ab-testing:assignments:v1`, mapping experiment id → variant id. On every
+activation the stored map is reconciled against the catalog:
 
-![Coverage picture](./assets/coverage_pic.png "Coverage picture")
+- A stored assignment is reused while it still points to an existing variant,
+  so a visitor keeps seeing the same variant across reloads.
+- Corrupt JSON, unknown shapes, or assignments referencing removed variants
+  degrade to "no assignment yet" and are repaired with a fresh random pick.
+- The repaired map is persisted back, so the next reload is stable again.
 
-## User stories
+## Analytics
 
-1. A visitor sees only one variation (assigned randomly) when lands on the page. ✔
-2. The assigned variation doesn’t change after page reload. ✔
-3. Track a pageview when a visitor lands on the page. ✔
-4. Track an event when a visitor clicks on the “Sign up” button. Printing payload to the console would do. ✔
-5. Make sure we don’t count the same visitors and clicks twice. ✔
-6. Allow editors to run multiple AB-tests on the same article. For example, one AB-test will test a hero image and another AB-test will test the outro copy. ✔
+The analytics module is also one operation:
+
+```ts
+const analytics = createAnalytics({ context, storage, sink })
+const result = analytics.record({ kind: 'page', name: 'Home Viewed', once: true })
+// result.status: 'delivered' | 'duplicate' | 'skipped' | 'failed'
+```
+
+`record` enriches the event with the current visitor context (consent,
+experiment exposures, screen, user agent) and delivers it to the sink. Instead
+of failing silently, it reports what it did with every event:
+
+- `delivered` — the sink accepted the enriched event.
+- `duplicate` — the event was marked `once` and was already delivered to this
+  visitor. Markers live under `ab-testing:analytics:v1:<kind>:<name>` keys and
+  are written only **after** successful delivery, so a failed delivery stays
+  retryable.
+- `skipped` — the context reports no consent; nothing is delivered and nothing
+  is stored.
+- `failed` — the sink threw; the reason is included in the result.
+
+Exposures reach analytics through the context provider in `main.ts`, so every
+recorded event carries which variants the visitor saw. The console sink prints
+events during development; a real destination only needs to implement the
+one-method `AnalyticsSink` interface.
+
+## Known limitations
+
+- **Client-side only.** Assignment happens in the browser after the page
+  loads, so the original content can flash before a variant renders. A real
+  setup would assign on the server or at the edge.
+- **localStorage identity.** Assignments and delivery markers are per browser
+  profile — a visitor switching devices or clearing storage is a new visitor.
+- **Uniform split only.** Variants are equally likely; there is no traffic
+  weighting, targeting, or scheduling (the variant objects leave room to add
+  them).
+- **Demo wiring.** Consent is granted up front in `main.ts` and events go to
+  the console sink; a real integration would supply a consent flow and a
+  network sink.
+- **Static catalog.** The catalog ships with the bundle from
+  `src/db/experiments.ts`; remote configuration is out of scope.

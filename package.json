@@ -1,7 +1,7 @@
 {
   "name": "ab-testing",
   "version": "1.0.0",
-  "description": "JavaScript example starter project",
+  "description": "Vanilla TypeScript A/B testing engine with a deep experimentation and analytics module",
   "private": true,
   "packageManager": "pnpm@11.5.1",
   "engines": {
@@ -13,21 +13,24 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@vitest/coverage-v8": "4.1.10",
+    "eslint": "10.7.0",
     "jsdom": "29.1.1",
-    "standard": "16.0.3",
     "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0",
     "vite": "8.1.4",
     "vitest": "4.1.10"
   },
   "keywords": [
-    "javascript",
-    "starter",
+    "typescript",
     "A/B testing"
   ]
 }
